@@ -45,7 +45,7 @@ c_snr_db = 20
 ### Signal generation ###
 #v_signal = random_binary_signal(n_symb = c_n_symb)
 
-word = pd.read_csv("quotes.csv").iloc[0][3]
+word = pd.read_csv("data/quotes.csv").iloc[0][3]
 v_signal = word_nrz_signal(word)
 
 plt.figure('binary_signal')
