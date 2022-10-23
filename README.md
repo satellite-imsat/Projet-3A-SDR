@@ -32,3 +32,6 @@ Andis Dembovskis (see reference [1]).
     1 0 1 0 1 0 1 1 1 1 1 1 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1 0 1
     0]
    ````
+### References
+[1] Andis Dembovskis, "AIS message extraction from overlapped AIS signals for SAT-AIS applications", Bremen University,
+March 2015.
