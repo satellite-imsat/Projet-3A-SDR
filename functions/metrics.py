@@ -1,3 +1,16 @@
+#!/usr/bin/env python
+# -*-coding:utf-8 -*-
+'''
+@File    :   metrics.py
+@Time    :   2022/10/24 18:13:57
+@Author  :   Thomas Aussaguès 
+@Version :   1.0
+@Contact :   thomas.aussagues@imt-atlantique.net
+@License :   (C)Copyright 2022$, Thomas Aussaguès
+@Desc    :   None
+'''
+
+
 import numpy as np
 
 def compute_ber(demodulated_signal : np.ndarray, ground_truth_signal : np.ndarray) -> float :

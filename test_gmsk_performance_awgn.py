@@ -1,12 +1,22 @@
+#!/usr/bin/env python
+# -*-coding:utf-8 -*-
+'''
+@File    :   test_gmsk_performance_awgn.py
+@Time    :   2022/10/24 18:15:11
+@Author  :   Thomas Aussaguès 
+@Version :   1.0
+@Contact :   thomas.aussagues@imt-atlantique.net
+@License :   (C)Copyright 2022$, Thomas Aussaguès
+@Desc    :   None
+'''
+
 import numpy as np
-from functions.gen_signal import random_binary_signal, word_nrz_signal, binary_to_nrz_signal
-from functions.mod_gmsk import mod_signal_gmsk, demod_gmsk
+from functions.gen_signal import random_binary_signal
+from functions.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
 import matplotlib.pyplot as plt
 import numpy as np
-from functions.str2bit import nameFromSignal
 from functions.metrics import compute_ber
 import matplotlib.pyplot as plt
-from functions.mod_gmsk import gmsk_demod
 
 ### We fix the random seed for reproductibility
 np.random.seed(1)
@@ -47,7 +57,7 @@ for snr_db in v_snr_db_list :
         v_signal = random_binary_signal(n_symb = c_n_symb)
 
         v_signal_gmsk = mod_signal_gmsk(v_signal = v_signal, 
-                                fc = c_fc_hz, 
+                                fc_hz = c_fc_hz, 
                                 up_sampling_factor = c_up_sampling, 
                                 time_bandwidth_product = c_time_bandwidth_product)
 
@@ -61,7 +71,7 @@ for snr_db in v_snr_db_list :
 
         ### Signal GMSK demodulation ###
 
-        v_hat = demod_gmsk(v_signal_gmsk, c_fc_hz, c_up_sampling)
+        v_hat = demod_gmsk_signal(v_signal_gmsk, c_fc_hz, c_up_sampling)
         #v_hat_hat = gmsk_demod(v_signal_gmsk, c_up_sampling)
         ### Binary Error Rate 
 

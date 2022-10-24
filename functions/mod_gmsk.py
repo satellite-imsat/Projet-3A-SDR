@@ -137,7 +137,7 @@ def mod_signal_gmsk(v_signal : np.ndarray, fc_hz : float, up_sampling_factor : i
  
     return gmsk_signal
 
-def demod_gmsk(v_signal_gmsk : np.ndarray, fc_hz : float, up_sampling_factor : int) -> np.ndarray :
+def demod_gmsk_signal(v_signal_gmsk : np.ndarray, fc_hz : float, up_sampling_factor : int) -> np.ndarray :
 
     '''
     
@@ -160,27 +160,29 @@ def demod_gmsk(v_signal_gmsk : np.ndarray, fc_hz : float, up_sampling_factor : i
     # We remove any useless additional dimension of the signal. We assume that all data is contained on its first
     # dimension
     v_signal_gmsk = v_signal_gmsk.squeeze()
+    # We get the number of samples n_samples
+    n_samples = v_signal_gmsk.shape[0]
 
     ## Removal the carrier frequency
     # We create a time vector
     v_time = np.arange(start = 0, stop = v_signal_gmsk.shape[0], step = 1) / (fc_hz * up_sampling_factor)
     # We remove the carrier frequency
-    v_signal = v_signal * np.exp( -2 * 1j * np.pi * fc_hz * v_time)
+    v_signal_gmsk = v_signal_gmsk * np.exp( -2 * 1j * np.pi * fc_hz * v_time)
     
     ## I & Q components
     v_i_signal = np.real(v_signal_gmsk)
     v_q_signal = - np.imag(v_signal_gmsk)
 
     ## Delayed version of the I & Q components
-    v_i_signal_delayed = np.hstack((np.zeros(up_sampling_factor), v_i_signal[0 : n_ech - up_sampling_factor]))
-    v_q_signal_delayed = np.hstack((np.zeros(up_sampling_factor), v_q_signal[0 : n_ech - up_sampling_factor]))
+    v_i_signal_delayed = np.hstack((np.zeros(up_sampling_factor), v_i_signal[0 : n_samples - up_sampling_factor]))
+    v_q_signal_delayed = np.hstack((np.zeros(up_sampling_factor), v_q_signal[0 : n_samples - up_sampling_factor]))
 
     # We apply the formula : signal_hat = Q * I_delayed - I * Q_delayed
     signal_hat = v_q_signal * v_i_signal_delayed - v_i_signal * v_q_signal_delayed
 
     # Decision based on the sign of the estimated signal. If > 0 then its 1 and 0 else.
     # Note that we remove samples added by the upsampling step
-    signal_hat = (signal_hat[2*up_sampling_factor-1:-up_sampling_factor:up_sampling_factor] > 0).astype(int)
+    signal_hat = (signal_hat[2 * up_sampling_factor - 1 : - up_sampling_factor : up_sampling_factor] > 0).astype(int)
     
     return signal_hat
 

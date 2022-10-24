@@ -1,3 +1,16 @@
+#!/usr/bin/env python
+# -*-coding:utf-8 -*-
+'''
+@File    :   gen_signal.py
+@Time    :   2022/10/24 18:14:34
+@Author  :   Thomas Aussaguès 
+@Version :   1.0
+@Contact :   thomas.aussagues@imt-atlantique.net
+@License :   (C)Copyright 2022$, Thomas Aussaguès
+@Desc    :   None
+'''
+
+
 import numpy as np
 from functions.str2bit import signalFromName
 from scipy.signal import upfirdn
@@ -31,7 +44,7 @@ def random_binary_signal(n_symb : int) -> np.ndarray:
 
     return binary_signal.astype(int)
 
-def word_nrz_signal(word : str) -> np.ndarray:
+def word_to_binary_signal(word : str) -> np.ndarray:
 
     binary_signal = signalFromName(name = word)
 
