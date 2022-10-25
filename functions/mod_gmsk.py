@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 # -*-coding:utf-8 -*-
 '''
@@ -60,7 +59,7 @@ def gaussian_filter(time_bandwidth_product : float, tb : float, up_sampling_fact
 
     return v_impulse_response
 
-def mod_signal_gmsk(v_signal : np.ndarray, fc_hz : float, up_sampling_factor : int, time_bandwidth_product : float, **kwargs) -> np.ndarray:
+def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_sampling_factor : int, time_bandwidth_product : float, **kwargs) -> np.ndarray:
 
     '''
 
@@ -70,6 +69,7 @@ def mod_signal_gmsk(v_signal : np.ndarray, fc_hz : float, up_sampling_factor : i
     Inputs :
 
     -> v_signal               : np.ndarray (of shape (n_symb, ) of binary values), this array contains the binary signal
+    -> fs_hz                  : float (positive, should be non null), the sampling frequency in Hz
     -> fc_hz                  : float (positive, should be non null), the carrier frequency in Hz
     -> up_sampling_factor     : int (positive, at least one), the upsampling factor such that the value of each bit will 
                                 remain the same on up_sampling_factor samples
@@ -95,8 +95,6 @@ def mod_signal_gmsk(v_signal : np.ndarray, fc_hz : float, up_sampling_factor : i
         raise ValueError(f"The modulation error should be between 0 and 1 (>0). Here the value {modulation_index} does not satisfy this condition.")
 
     ## We compute some parameters of the signal
-    # Sampling frequency (in Hz)
-    fs_hz = up_sampling_factor * fc_hz
     # Sampling time (in s)
     ts_s = 1 / fs_hz
     # Bit duration (in s)
@@ -133,11 +131,11 @@ def mod_signal_gmsk(v_signal : np.ndarray, fc_hz : float, up_sampling_factor : i
     # We generate a time vector
     v_time = np.arange(start = 0, stop = gmsk_signal.shape[0], step = 1) / fs_hz
     # Finally, we multiply it with the carrier (of frequency fc_hz)
-    gmsk_signal *= np.exp(2 * 1j * np.pi * fc_hz * v_time)
+    gmsk_signal = gmsk_signal * np.exp(2 * 1j * np.pi * fc_hz * v_time)
  
     return gmsk_signal
 
-def demod_gmsk_signal(v_signal_gmsk : np.ndarray, fc_hz : float, up_sampling_factor : int) -> np.ndarray :
+def demod_gmsk_signal(v_signal_gmsk : np.ndarray, fs_hz : float, fc_hz : float, up_sampling_factor : int) -> np.ndarray :
 
     '''
     
@@ -147,6 +145,7 @@ def demod_gmsk_signal(v_signal_gmsk : np.ndarray, fc_hz : float, up_sampling_fac
     
     -> v_signal_gmsk      : np.ndarray (of shape (n_symb * up_sampling_factor, ) of complex floats), this array contains 
                             the values of the modulated signal
+    -> fs_hz              : float (positive, should be non null), the sampling frequency in Hz
     -> fc_hz              : float (positive, should be non null), the carrier frequency in Hz
     -> up_sampling_factor : int (positive, at least one), the upsampling factor such that the value of each bit will 
                             remain the same on up_sampling_factor samples
@@ -165,7 +164,7 @@ def demod_gmsk_signal(v_signal_gmsk : np.ndarray, fc_hz : float, up_sampling_fac
 
     ## Removal the carrier frequency
     # We create a time vector
-    v_time = np.arange(start = 0, stop = v_signal_gmsk.shape[0], step = 1) / (fc_hz * up_sampling_factor)
+    v_time = np.arange(start = 0, stop = v_signal_gmsk.shape[0], step = 1) / fs_hz
     # We remove the carrier frequency
     v_signal_gmsk = v_signal_gmsk * np.exp( -2 * 1j * np.pi * fc_hz * v_time)
     
