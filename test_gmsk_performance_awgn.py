@@ -10,7 +10,6 @@
 @Desc    :   None
 '''
 
-from unittest import result
 import numpy as np
 from functions.gen_signal import random_binary_signal
 from functions.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
