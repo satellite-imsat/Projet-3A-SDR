@@ -14,8 +14,9 @@ The branch "signal-processing" contains python scripts and functions to illustra
 ### User Guide
 1) First clone the repository and install all the required packages :\
     `pip install -r requirements.txt`
-    
-2) To simulate the transmission of a GMSK modulated binary signal over a additive white gaussian noise channel, run `demo_gmsk_demodulation.py`.
+
+
+2) To simulate the transmission of a GMSK modulated binary signal over a additive white gaussian noise channel, run `demo_gmsk_demodulation.py`. Simulation paramters can be edited in the `demo_gmsk_demodulation.py` file.
     ````
     >>> python demo_gmsk_demodulation.py
     >>>  ************************************************************
