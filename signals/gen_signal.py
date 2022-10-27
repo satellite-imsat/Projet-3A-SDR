@@ -12,7 +12,7 @@
 
 
 import numpy as np
-from functions.str2bit import signalFromName
+from utils.str2bit import signalFromName
 from scipy.signal import upfirdn
 
 def random_binary_signal(n_symb : int) -> np.ndarray:

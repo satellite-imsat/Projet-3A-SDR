@@ -10,14 +10,12 @@
 @Desc    :   None
 '''
 
-from functions.gen_signal import random_binary_signal, word_to_binary_signal, binary_to_nrz_signal
-from functions.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
+from signals.gen_signal import random_binary_signal, binary_to_nrz_signal
+from modulation.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
 import matplotlib.pyplot as plt
 import numpy as np
-from functions.str2bit import nameFromSignal
-from functions.metrics import compute_ber
+from utils.metrics import compute_ber
 import matplotlib.pyplot as plt
-import pandas as pd
 plt.style.use(['science','grid'])
 
 '''
@@ -70,7 +68,7 @@ plt.xlim([0, 1 / c_bit_rate_bit_per_sec * 20 * 1e3])
 plt.xlabel('Time $t$ in ms')
 plt.ylabel('Signal s(t)')
 plt.title('Binary signal')
-plt.savefig('figures/binary_signal.pdf', dpi = 300)
+plt.savefig('figures/demo_gmsk_binary_signal/binary_signal.pdf', dpi = 300)
 plt.close('binary_signal')
 
 ## We plot the NRZ associated signal
@@ -81,7 +79,7 @@ plt.xlim([0, 1 / c_fs_hz * c_up_sampling * 20 * 1e3])
 plt.xlabel('Time $t$ in ms')
 plt.ylabel('Signal s(t)')
 plt.title('NRZ signal')
-plt.savefig('figures/nrz_signal.pdf', dpi = 300)
+plt.savefig('figures/demo_gmsk_binary_signal/nrz_signal.pdf', dpi = 300)
 plt.close('nrz_signal')
 
 ############################# Signal GMSK modulation #############################
@@ -101,7 +99,7 @@ plt.xlim([0, 1 / c_fs_hz * c_up_sampling * 20 * 1e3])
 plt.xlabel('Time $t$ in ms')
 plt.ylabel('Signal s(t)')
 plt.title('Unoised modulated signal (no carrier)')
-plt.savefig('figures/unoised_modulated_signal.pdf', dpi = 300)
+plt.savefig('figures/demo_gmsk_binary_signal/unoised_modulated_signal.pdf', dpi = 300)
 plt.close('unoised_modulated_signal')
 
 ############################# Propgation over the chosen channel #############################
@@ -123,7 +121,7 @@ plt.xlim([0, 1 / c_fs_hz * c_up_sampling * 20 * 1e3])
 plt.xlabel('Time $t$ in ms')
 plt.ylabel('Signal s(t)')
 plt.title('Noisy modulated signal (no carrier)')
-plt.savefig('figures/noisy_modulated_signal.pdf', dpi = 300)
+plt.savefig('figures/demo_gmsk_binary_signal/noisy_modulated_signal.pdf', dpi = 300)
 plt.close('noisy_modulated_signal')
 
 ############################# Signal GMSK demodulation #############################
@@ -140,8 +138,6 @@ v_hat = demod_gmsk_signal(v_signal_gmsk = v_signal_gmsk,
 ber = compute_ber(demodulated_signal =  v_hat, ground_truth_signal = v_signal)
 
 ### Printing results
-print('\n', '*' * 60)
-#print(f"\nThe emitted message was :\n{word}\n")
-#print(f"The receveid one is : \n{nameFromSignal(signal = v_hat)}\n")
+print('\n', '*' * 60, '\n')
 print(f"For a SNR of {c_snr_db} dB, we have a BER of {ber}\n")
 print('*' * 60, '\n')

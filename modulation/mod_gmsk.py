@@ -15,7 +15,7 @@ import numpy as np
 import scipy.signal
 # We import the binary_to_nrz_signal function which converts a binary signal
 # (0's and 1's) to an NRZ one (-1's and 1's) and applied a rectangular pulse shaping filter
-from functions.gen_signal import binary_to_nrz_signal
+from signals.gen_signal import binary_to_nrz_signal
 
 def gaussian_filter(time_bandwidth_product : float, tb : float, up_sampling_factor : int, filter_length : int) -> np.ndarray :
 

@@ -11,11 +11,11 @@
 '''
 
 import numpy as np
-from functions.gen_signal import random_binary_signal
-from functions.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
+from signals.gen_signal import random_binary_signal
+from modulation.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
 import matplotlib.pyplot as plt
 import numpy as np
-from functions.metrics import compute_ber
+from utils.metrics import compute_ber
 import matplotlib.pyplot as plt
 plt.style.use(['science','grid'])
 
@@ -106,4 +106,4 @@ plt.xlabel("SNR (in dB)")
 plt.ylabel("Binary Error Rate")
 plt.title("GMSK BER vs. SNR")
 plt.legend(loc = 'best')
-plt.savefig('figures/ber_vs_snr.pdf', dpi = 300)
+plt.savefig('figures/test_gmsk_performance_awgn/ber_vs_snr.pdf', dpi = 300)
