@@ -17,19 +17,25 @@ Note that figures explaining the steps behind the cross-coupled baseband GMSK de
 1) First clone the repository and install all the required packages :\
     `pip install -r requirements.txt`
 
+    To check the correcteness of your setupe, you can run the unit tests stored in the `test`folder using the `pytest` framework.
 
-2) To simulate the transmission of a GMSK modulated binary signal over a additive white gaussian noise channel, run `demo_gmsk_demodulation.py`. Simulation paramters can be edited in the `demo_gmsk_demodulation.py` file.
+
+2) To simulate the transmission of a GMSK modulated AIS signal over a additive white gaussian noise channel, run `demo_gmsk_ais.py`. Simulation paramters can be edited in the `demo_gmsk_ais.py` file.
     ````
-    >>> python demo_gmsk_demodulation.py
+    >>> python demo_gmsk_ais.py
     >>>  ************************************************************
           For a SNR of 10 dB, we have a BER of 0.00392156862745098
 
          ************************************************************ 
     ````
     
-   The generated figures are stored in the `figures` folder. The computed BER is displayed in the terminal.
+   The generated figures are stored in the `figures/demo_gmsk_ais` folder. The computed BER is displayed in the terminal.
+
+You can do the same for :
+    - A binary signal with the script `demo_gmsk_binary_signal.py`
+    - A quote with the script `demo_gmsk_quote_signal.py`. We provide some famous quotes in the csv file `data/quotes.csv`.
     
-3) To simulate the performance of GMSK (with AIS parameters) over an dditive white gaussian noise channel for different time-bandwidth product values, run `test_gmsk_performance_awgn.py`. It generates multiple Binary Error Rate vs. SNR curves : one for each time-bandwidth product value. Again, the figure is stored in the `figures` folder.
+3) To simulate the performance of GMSK (with AIS parameters) over an dditive white gaussian noise channel for different time-bandwidth product values, run `test_gmsk_performance_awgn.py`. It generates multiple Binary Error Rate vs. SNR curves : one for each time-bandwidth product value. Again, the figure is stored in the `figures/test_gmsk_performance_awgn` folder.
 
     ````
     python demo_gmsk_demodulation.py
