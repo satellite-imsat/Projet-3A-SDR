@@ -74,6 +74,7 @@ def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_samp
     -> up_sampling_factor     : int (positive, at least one), the upsampling factor such that the value of each bit will 
                                 remain the same on up_sampling_factor samples
     -> time_bandwidth_product : float (positive, non-null), the time-bandwith value, standard value 0.3
+    -> output_power           : float, OPTIONAL parameter, desired output power in dB, standard value 10 dB (<=> 10 W)
     -> modulation_index       : float (positive, non-null), OPTIONAL parameter, the modulation index h
     -> filter_length          : int (positive, at least one), OPTIONAL parameter, the length of the Gaussian pulse-shaping 
                                 filter such that the min time of the impulse response value is
@@ -87,6 +88,7 @@ def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_samp
     '''
 
     ## Optional parameters
+    output_power            = kwargs.get('modulation_index', 10)
     modulation_index        = kwargs.get('modulation_index', 0.5)
     filter_length           = kwargs.get('filter_length', 1)
 
@@ -132,6 +134,14 @@ def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_samp
     v_time = np.arange(start = 0, stop = gmsk_signal.shape[0], step = 1) / fs_hz
     # Finally, we multiply it with the carrier (of frequency fc_hz)
     gmsk_signal = gmsk_signal * np.exp(2 * 1j * np.pi * fc_hz * v_time)
+
+    ## Output power
+    # We get the signal power
+    gmsk_signal_power = np.linalg.norm(gmsk_signal) ** 2 / gmsk_signal.shape[0]
+    # We divide the signal by its power square root and multiply by the quare root of the desired one. 
+    # Remark 1 : note the dB -> W conversion.
+    # Remark 2 : we use the power square root since we work with the signal amplitude and not magnitude.
+    gmsk_signal = gmsk_signal * ((10 ** (output_power / 10)) / gmsk_signal_power) ** 0.5
  
     return gmsk_signal
 

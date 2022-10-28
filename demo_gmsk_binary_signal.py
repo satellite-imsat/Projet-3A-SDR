@@ -12,6 +12,7 @@
 
 from signals.gen_signal import random_binary_signal, binary_to_nrz_signal
 from modulation.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
+from propagation.channels import awgn_channel, propagation_loss
 import matplotlib.pyplot as plt
 import numpy as np
 from utils.metrics import compute_ber
@@ -48,17 +49,25 @@ c_fs_hz = c_bit_rate_bit_per_sec * c_up_sampling
 c_fc_hz = 161.975e6
 # Time-bandwidth product (float, 0.4 for AIS)
 c_time_bandwidth_product = 0.4
-# Signal-to-Noise-Ratio in dB (float)
+
+# Desried Signal-to-Noise-Ratio in dB at the RX (float)
 c_snr_db = 10
+
+# Antennas parameters
+
+# Output signal power in dB (float) (10 dB <=> 10 W)
+c_output_signal_power = 10 
+# TX gain in dBi
+c_g_tx_dbi = 0
+# TX gain in dBi
+c_g_rx_dbi = 0
+# Distance TX - RX (horizontal and vertical distances in the formule) (km)
+c_distance_km = np.sqrt(30 ** 2 + 40 ** 2)
 
 ############################# Signal generation #############################
 
 # We generate a random binary signal
 v_signal = random_binary_signal(n_symb = c_n_symb)
-
-# We load a quote and we convert it into a binary signal
-# word = pd.read_csv("data/quotes.csv").iloc[0][3]
-# v_signal = word_to_binary_signal(word)
 
 ## We plot the generated binary signal
 plt.figure('binary_signal')
@@ -89,7 +98,8 @@ v_signal_gmsk = mod_signal_gmsk(v_signal = v_signal,
                                 fs_hz = c_fs_hz,
                                 fc_hz = c_fc_hz, 
                                 up_sampling_factor = c_up_sampling, 
-                                time_bandwidth_product = c_time_bandwidth_product)
+                                time_bandwidth_product = c_time_bandwidth_product,
+                                output_power = c_output_signal_power)
 
 ## We plot the modulated, without noise, signal
 plt.figure('unoised_modulated_signal')
@@ -104,14 +114,16 @@ plt.close('unoised_modulated_signal')
 
 ############################# Propgation over the chosen channel #############################
 
-# Here, we consider a simple AWGN channel with no attenuation
+# Propagation loss : we compute the signal power at the RX according to FRIIS' formula
+v_signal_gmsk = propagation_loss(v_signal = v_signal_gmsk,
+                                tx_power_dB = c_output_signal_power, 
+                                g_tx_dBi = c_g_tx_dbi, 
+                                g_rx_dBi = c_g_rx_dbi, 
+                                carrier_frequency_Mhz = c_fc_hz, 
+                                distance_km = c_distance_km)
 
-# First we get the signal power defined as the signal squared norm divided by the number of symbols
-signal_power = np.linalg.norm(v_signal) ** 2 / v_signal.shape[0]
-# Then, we compute the noise power (in linear units) by applying the SNR definition in linear units.
-noise_power = signal_power / (10 ** (c_snr_db / 10))
-# Finally, we simply add a random complex noise to the signal since we have an AWGN channel.
-v_signal_gmsk = v_signal_gmsk + np.sqrt(noise_power / 2) * (np.random.randn(v_signal_gmsk.shape[0]) + 1j * np.random.randn(v_signal_gmsk.shape[0]))
+# AWGN channel : we apply the noise such that the SNR at the RX is c_snr_db
+v_signal_gmsk = awgn_channel(v_signal = v_signal_gmsk, snr_db = 10)
 
 ## We plot the noisy modulated signal
 plt.figure('noisy_modulated_signal')

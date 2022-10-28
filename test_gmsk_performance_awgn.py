@@ -15,6 +15,7 @@ from signals.gen_signal import random_binary_signal
 from modulation.mod_gmsk import mod_signal_gmsk, demod_gmsk_signal
 import matplotlib.pyplot as plt
 import numpy as np
+from propagation.channels import awgn_channel, propagation_loss
 from utils.metrics import compute_ber
 import matplotlib.pyplot as plt
 plt.style.use(['science','grid'])
@@ -50,10 +51,22 @@ c_fc_hz = 161.975e6
 # Time-bandwidth product values (float, 0.4 for AIS)
 v_time_bandwidth_product = np.arange(start = 0.1, stop = 0.6, step = 0.1)
 # Signal-to-Noise-Ratio values in dB (float)
-v_snr_db = np.arange(start = 0, stop = 20, step = 1)
+v_snr_db = np.arange(start = 0, stop = 20, step = .5)
+
+# Antennas parameters
+
+# Output signal power in dB (float) (10 dB <=> 10 W)
+c_output_signal_power = 10 
+# TX gain in dBi
+c_g_tx_dbi = 0
+# TX gain in dBi
+c_g_rx_dbi = 0
+# Distance TX - RX (horizontal and vertical distances in the formule) (km)
+c_distance_km = np.sqrt(30 ** 2 + 40 ** 2)
+
 
 # Monte-Carlo simulation paramter : number of generated signals per SNR value
-c_n_signals = 100
+c_n_signals = 200
 
 # We define a list which will contain one list of BER values per SNR values, for each time-bandwidth product values
 results = []
@@ -63,7 +76,7 @@ for time_bandwidth_product in v_time_bandwidth_product :
     v_ber = []
 
     for snr_db in v_snr_db :
-
+    
         running_ber = 0
 
         for _ in range(c_n_signals) :
@@ -76,15 +89,22 @@ for time_bandwidth_product in v_time_bandwidth_product :
                                             fs_hz = c_fs_hz,    
                                             fc_hz = c_fc_hz, 
                                             up_sampling_factor = c_up_sampling, 
-                                            time_bandwidth_product = time_bandwidth_product)
+                                            time_bandwidth_product = time_bandwidth_product,
+                                            output_power = c_output_signal_power)
 
-            # First we get the signal power defined as the signal squared norm divided by the number of symbols
-            signal_power = np.linalg.norm(v_signal) ** 2 / v_signal.shape[0]
-            # Then, we compute the noise power (in linear units) by applying the SNR definition in linear units.
-            noise_power = signal_power / (10 ** (snr_db / 10))
-            # Finally, we simply add a random complex noise to the signal since we have an AWGN channel.
-            v_signal_gmsk = v_signal_gmsk + np.sqrt(noise_power / 2) * (np.random.randn(v_signal_gmsk.shape[0]) + 1j * np.random.randn(v_signal_gmsk.shape[0]))
-
+            #### Propgation over the chosen channel
+            
+            # Propagation loss : we compute the signal power at the RX according to FRIIS' formula
+            v_signal_gmsk = propagation_loss(v_signal = v_signal_gmsk,
+                                            tx_power_dB = c_output_signal_power, 
+                                            g_tx_dBi = c_g_tx_dbi, 
+                                            g_rx_dBi = c_g_rx_dbi, 
+                                            carrier_frequency_Mhz = c_fc_hz, 
+                                            distance_km = c_distance_km)
+            
+            # AWGN channel : we apply the noise such that the SNR at the RX is snr_db
+            v_signal_gmsk = awgn_channel(v_signal = v_signal_gmsk, snr_db = snr_db)
+            
             ### GMSK demodulation ###
             v_hat = demod_gmsk_signal(v_signal_gmsk = v_signal_gmsk, 
                                       fs_hz = c_fs_hz, 
