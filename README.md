@@ -31,7 +31,8 @@ Note that figures explaining the steps behind the cross-coupled baseband GMSK de
     
    The generated figures are stored in the `figures/demo_gmsk_ais` folder. The computed BER is displayed in the terminal.
 
-You can do the same for :
+    You can do the same for :
+
     - A binary signal with the script `demo_gmsk_binary_signal.py`
     - A quote with the script `demo_gmsk_quote_signal.py`. We provide some famous quotes in the csv file `data/quotes.csv`.
     
