@@ -1,52 +1,41 @@
 #include <stdio.h>
 #include "demod.h"
 #include "complexLib.h"
+#include <stdlib.h>
 
 
 
 int main()
 {
    printf("***** Start of main ***** \r\n");
-   struct complex testVector[sizeSignal];
-   struct complex *testPointer;
    
-   double timeVector[sizeSignal];
-   double* timeVectorPointer;
-
-   struct complex multVector[sizeSignal];
-   struct complex *multPointer;
-
-   struct complex delayedVector[sizeSignal];
-   struct complex *delayedPointer;
-
-   double outputVector[sizeSignal];
-   double *outputPointer;
-
-   testPointer = testVector;
-   timeVectorPointer = timeVector;
-   multPointer = multVector;
-   delayedPointer = delayedVector;
-   outputPointer = outputVector;
+   struct complex *bufferComplexPointer = (struct complex*) malloc(sizeSignal*sizeof(struct complex));
+   double *bufferDoublePointer = (double*) malloc(sizeSignal*sizeof(double));
 
    // generate random input and test demod
    for(int i = 0; i< sizeSignal; i++){
-    testVector[i].real=3.0;
-    testVector[i].imag=7.0;
+    (bufferComplexPointer+i)->real=3.0;
+    (bufferComplexPointer+i)->imag=7.0;
    }
 
-   initVectors(timeVectorPointer, 0.0001);
+   initVectors(bufferDoublePointer, 0.0001);
    for(int i = 0; i< sizeSignal; i++){
-    printf("%f \r\n", *(timeVectorPointer + i));
+    printf("%f \r\n", *(bufferDoublePointer + i));
    }
 
-   computeDelayedSignals(delayedPointer,multPointer,testPointer,timeVectorPointer);
+   computeMultSignals(bufferComplexPointer,bufferDoublePointer);
    for(int i = 0; i< sizeSignal; i++){
-    printComplex(*(delayedPointer + i));
+    printComplex(*(bufferComplexPointer + i));
    }
-   computeOutput(outputPointer,delayedPointer,multPointer);
+
+
+   computeOutput(bufferDoublePointer,bufferComplexPointer);
    for(int i = 0; i< sizeSignal; i++){
-    printf("%f \r\n", *(outputPointer + i));
+    printf("%f \r\n", *(bufferDoublePointer + i));
    }
+
+   free(bufferComplexPointer);
+   free(bufferDoublePointer);
 
    return(0);
 }
