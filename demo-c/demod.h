@@ -10,7 +10,7 @@ extern int timeDelay;
 extern double fsample;
 
 void initVectors(double* timePointer, double samplePeriod);
-void computeDelayedSignals(struct complex* delayedPointer, struct complex* multPointer, struct complex* inputPointe, double* timePointer);
-void computeOutput(double* outputPointer,struct complex* delayedPointer, struct complex* multPointer);
+void computeMultSignals(struct complex* inputPointer, double* timePointer);
+void computeOutput(double* outputPointer, struct complex* bufferPointer);
 
 #endif

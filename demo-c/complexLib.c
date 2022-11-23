@@ -3,8 +3,8 @@
 
 struct complex complexExp(double frequency, double time){
     struct complex exp;
-    exp.real = cos(2*3.14*frequency*time);
-    exp.imag = sin(2*3.14*frequency*time);
+    exp.real = cos(-2*3.14*frequency*time);
+    exp.imag = sin(-2*3.14*frequency*time);
     return exp;
 }
 
