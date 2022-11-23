@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 
-const int sizeSignal = 10;
+int sizeSignal = 10;
 double fporteuse = 161975000.0;
 int timeDelay = 2;
 double fsample = 230400;
@@ -17,7 +17,6 @@ void initVectors(double* timePointer, double samplePeriod){
 }
 
 void computeMultSignals(struct complex* inputPointer, double* timePointer){
-    printf("here");
     struct complex zeroComplex;
     zeroComplex.real=0.0;
     zeroComplex.imag=0.0;
@@ -37,6 +36,19 @@ void computeOutput(double* outputPointer,struct complex* bufferPointer){
          }
     }
     printf("output ok \r\n");
+    return;
+}
+
+void demodulate(struct complex* inputPointer, double* outputPointer, double fsample, double fporteuse, int timeDelay, int sizeSignal){
+    sizeSignal = sizeSignal;
+    fporteuse = fporteuse;
+    timeDelay = timeDelay;
+    fsample = fsample;
+    
+    initVectors(outputPointer, 1/fsample);
+    computeMultSignals(inputPointer,outputPointer);
+    computeOutput(outputPointer,inputPointer);
+
     return;
 }
 

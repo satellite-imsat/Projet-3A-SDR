@@ -4,13 +4,11 @@
 #include <math.h>
 #include "complexLib.h"
 
-extern const int sizeSignal;
+extern int sizeSignal;
 extern double fporteuse;
 extern int timeDelay;
 extern double fsample;
 
-void initVectors(double* timePointer, double samplePeriod);
-void computeMultSignals(struct complex* inputPointer, double* timePointer);
-void computeOutput(double* outputPointer, struct complex* bufferPointer);
+void demodulate(struct complex* inputPointer,double* outputPointer, double fsample, double fporteuse, int timeDelay, int sizeSignal);
 
 #endif
