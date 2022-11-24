@@ -1,0 +1,4 @@
+../Core/Src/demod.c:11:6:initVectors	40	static
+../Core/Src/demod.c:19:6:computeMultSignals	112	static
+../Core/Src/demod.c:30:6:computeOutput	40	static
+../Core/Src/demod.c:42:6:demodulate	24	static

@@ -1,0 +1,5 @@
+../Core/Src/complexLib.c:7:16:complexExp	48	static
+../Core/Src/complexLib.c:14:16:complexProduct	40	static
+../Core/Src/complexLib.c:21:16:complexAdd	40	static
+../Core/Src/complexLib.c:28:16:complexSoust	40	static
+../Core/Src/complexLib.c:35:6:printComplex	72	static

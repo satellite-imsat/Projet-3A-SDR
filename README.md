@@ -15,8 +15,10 @@ The branch "signal-processing-c" contains C code for demodulation and decoding o
 ### User Guide
 -> Compile all the files
     `make`
+
 -> Test the algrithm
     `./main`
+    
 -> Clear the compiled files
     `make clear`
 
