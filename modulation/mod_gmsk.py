@@ -21,19 +21,25 @@ def gaussian_filter(time_bandwidth_product : float, tb : float, up_sampling_fact
 
     '''
     
-    This function returns the impulse response of a Gaussian (bell-shaped) filter. It is used
+    Return the impulse response of a Gaussian (bell-shaped) filter. It is used
     as a pulse-shaping filter in GMSK.
     
-    Inputs :
+    Parameters
+    ----------
     
-    -> time_bandwidth_product : float, the time bandwidth product, 0.3 for GMSK
-    -> tb                     : float, the bit duration is second
-    -> filter_length          : int, should at least be one, filter length such that the min time value is
-    - filter_length * tb and the max one filter_length * tb
+    - time_bandwidth_product : float
+        time bandwidth product, 0.3 for GMSK
+    - tb : float
+        the bit duration is second
+    - filter_length : int
+        should at least be one, filter length such that the min time value is
+        filter_length * tb and the max one filter_length * tb
     
-    Output :
+    Returns
+    -------
     
-    -> impulse_response, np.ndarray (of shape (2 * up_sampling * filter_length + 1, ) of real values), the filter impulse response
+    - impulse_response : array-like (of shape (2 * up_sampling * filter_length + 1, ), floats)
+        the filter impulse response
     
     '''
 
@@ -45,50 +51,54 @@ def gaussian_filter(time_bandwidth_product : float, tb : float, up_sampling_fact
     if filter_length < 1 :
         raise ValueError(f"The filter legnth should be a positive integer at least equal to one. Here, the filter legnth is {filter_length} which is less than one!")
 
-    # We compute the b coefficients
+    # Filter coefficients
     b = time_bandwidth_product / tb
-    # Then, we get the variance
+    # Variance
     sigma_squared = np.log(2) / (2 * np.pi * b) ** 2
 
-    # We create a time vector. Note that it contains 2 * up_sampling * filter_length + 1 values.
+    # Time vector  (2 * up_sampling * filter_length + 1 values)
     v_time = np.arange(start = - filter_length * tb, stop = filter_length * tb + tb / up_sampling_factor, step = tb / up_sampling_factor)
-    # Using this vector, we get the filter impulse response
+    # Impulse response computation
     v_impulse_response = 1 / np.sqrt(2 * np.pi * sigma_squared) * np.exp(- v_time ** 2 / (2 * sigma_squared))
-    # We normalize it 
+    # Normalization
     v_impulse_response /= np.sum(v_impulse_response)
 
     return v_impulse_response
 
-def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_sampling_factor : int, time_bandwidth_product : float, **kwargs) -> np.ndarray:
+def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, up_sampling_factor : int, time_bandwidth_product : float, **kwargs) -> np.ndarray:
 
     '''
+    Implementation of GMSK modulation. The output signal is complex.
 
-    This function modulates a binary signal using GMSK modulation. It handles all necessary steps : from the NRZ conversion to applying the
-    carrier. The ouput signal is complex.
+    Parameters
+    ----------
 
-    Inputs :
+    - v_signal : array-like (of length n_symb, binary int),
+        contains the binary signal
+    - fs_hz : float 
+        sampling frequency in Hz
+    - up_sampling_factor     : int 
+        upsampling factor such that the value of each bit will remain 
+        the same on up_sampling_factor samples
+    - time_bandwidth_product : float,
+        the time-bandwith value, standard value 0.3
+    - modulation_index : float, 
+        optional, the modulation index h
+    - filter_length : int (positive, at least one), 
+        optional, the length of the Gaussian pulse-shaping 
+        filter such that the min time of the impulse response value is
+        - filter_length * tb and the max one filter_length * tb
 
-    -> v_signal               : np.ndarray (of shape (n_symb, ) of binary values), this array contains the binary signal
-    -> fs_hz                  : float (positive, should be non null), the sampling frequency in Hz
-    -> fc_hz                  : float (positive, should be non null), the carrier frequency in Hz
-    -> up_sampling_factor     : int (positive, at least one), the upsampling factor such that the value of each bit will 
-                                remain the same on up_sampling_factor samples
-    -> time_bandwidth_product : float (positive, non-null), the time-bandwith value, standard value 0.3
-    -> output_power           : float, OPTIONAL parameter, desired output power in dB, standard value 10 dB (<=> 10 W)
-    -> modulation_index       : float (positive, non-null), OPTIONAL parameter, the modulation index h
-    -> filter_length          : int (positive, at least one), OPTIONAL parameter, the length of the Gaussian pulse-shaping 
-                                filter such that the min time of the impulse response value is
-                                - filter_length * tb and the max one filter_length * tb
+    Returns
+    -------
 
-    Output :
-
-    -> v_signal_gmsk          : np.ndarray (of shape (n_symb * up_sampling_factor, ) of complex floats), this array contains 
-                                the values of the modulated signal
+    - v_signal_gmsk : array-like (of length n_symb * up_sampling_factor, complex floats), 
+        this array contains the values of the modulated signal
 
     '''
 
     ## Optional parameters
-    output_power            = kwargs.get('modulation_index', 10)
+
     modulation_index        = kwargs.get('modulation_index', 0.5)
     filter_length           = kwargs.get('filter_length', 1)
 
@@ -96,7 +106,7 @@ def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_samp
     if modulation_index <= 0 or modulation_index > 1 :
         raise ValueError(f"The modulation error should be between 0 and 1 (>0). Here the value {modulation_index} does not satisfy this condition.")
 
-    ## We compute some parameters of the signal
+    ## Bit duration
     # Sampling time (in s)
     ts_s = 1 / fs_hz
     # Bit duration (in s)
@@ -107,14 +117,16 @@ def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_samp
     v_signal = v_signal.squeeze()
 
     ## Pulse shaping
-    # We convert the binary signal to an NRZ one with rectangular pulses
+    
+    # NRZ signal conversion
     v_signal = binary_to_nrz_signal(binary_signal = v_signal, up_sampling_factor = up_sampling_factor)
-    # Then, we compute the impulse response of the Gaussian pulse-shaping filter
+    # Gaussian filter impulse response
     v_gaussian_filter = gaussian_filter(time_bandwidth_product = time_bandwidth_product, tb = tb_s, up_sampling_factor = up_sampling_factor, filter_length = filter_length).squeeze()
-    # We apply it using convolution. Note that we choose to use the "full" mode here.
+    # Filtering
     v_signal = np.convolve(a = v_signal, v = v_gaussian_filter, mode = "full")
     
     ## Integration
+    
     # Normalisation step 
     v_signal /= np.max(v_signal)
     # Integration step
@@ -123,75 +135,54 @@ def mod_signal_gmsk(v_signal : np.ndarray, fs_hz : float, fc_hz : float, up_samp
     v_signal *= np.pi * modulation_index / tb_s
     
     ## I & Q components
-    # Then, we get both I and Q components (In phase and Quadrature)
+
+    # I component
     v_i_signal = np.cos(v_signal)
+    # Q component
     v_q_signal = np.sin(v_signal)
-    # We form the complex GMSK signal : signal = I - j * Q
-    gmsk_signal = v_i_signal - 1j *  v_q_signal
-
-    ## Carrier wave
-    # We generate a time vector
-    v_time = np.arange(start = 0, stop = gmsk_signal.shape[0], step = 1) / fs_hz
-    # Finally, we multiply it with the carrier (of frequency fc_hz)
-    gmsk_signal = gmsk_signal * np.exp(2 * 1j * np.pi * fc_hz * v_time)
-
-    ## Output power
-    # We get the signal power
-    gmsk_signal_power = np.linalg.norm(gmsk_signal) ** 2 / gmsk_signal.shape[0]
-    # We divide the signal by its power square root and multiply by the quare root of the desired one. 
-    # Remark 1 : note the dB -> W conversion.
-    # Remark 2 : we use the power square root since we work with the signal amplitude and not magnitude.
-    gmsk_signal = gmsk_signal * ((10 ** (output_power / 10)) / gmsk_signal_power) ** 0.5
+    # Complex GMSK signal : signal = I - j * Q
+    v_signal_tx = v_i_signal - 1j *  v_q_signal
  
-    return gmsk_signal
+    return v_signal_tx
 
-def demod_gmsk_signal(v_signal_gmsk : np.ndarray, fs_hz : float, fc_hz : float, up_sampling_factor : int) -> np.ndarray :
+def differential_decoder(v_signal_rx : np.ndarray, up_sampling_factor : int) -> np.ndarray :
 
-    '''
-    
-    This function demodulates the input GMSK modulated signal. The input signal is assumed to not be a baseband one.
-    
-    Inputs :
-    
-    -> v_signal_gmsk      : np.ndarray (of shape (n_symb * up_sampling_factor, ) of complex floats), this array contains 
-                            the values of the modulated signal
-    -> fs_hz              : float (positive, should be non null), the sampling frequency in Hz
-    -> fc_hz              : float (positive, should be non null), the carrier frequency in Hz
-    -> up_sampling_factor : int (positive, at least one), the upsampling factor such that the value of each bit will 
-                            remain the same on up_sampling_factor samples
-    
-    Output :
-    
-    -> v_signal_hat       : np.ndarray (of shape (n_symb, ) of binary values), this array contains the estimated binary signal
-    
-    '''
+    """
+    Implement a differential decoder that takes a complex baseband signal as input.
 
-    # We remove any useless additional dimension of the signal. We assume that all data is contained on its first
-    # dimension
-    v_signal_gmsk = v_signal_gmsk.squeeze()
-    # We get the number of samples n_samples
-    n_samples = v_signal_gmsk.shape[0]
+    Parameters
+    ----------
 
-    ## Removal the carrier frequency
-    # We create a time vector
-    v_time = np.arange(start = 0, stop = v_signal_gmsk.shape[0], step = 1) / fs_hz
-    # We remove the carrier frequency
-    v_signal_gmsk = v_signal_gmsk * np.exp( -2 * 1j * np.pi * fc_hz * v_time)
-    
-    ## I & Q components
-    v_i_signal = np.real(v_signal_gmsk)
-    v_q_signal = - np.imag(v_signal_gmsk)
+    - v_signal_rx : array-like (of complex floats)
+        contains the baseband received signal  
+    - up_sampling_factor : int
+        the upsampling factor
 
-    ## Delayed version of the I & Q components
-    v_i_signal_delayed = np.hstack((np.zeros(up_sampling_factor), v_i_signal[0 : n_samples - up_sampling_factor]))
-    v_q_signal_delayed = np.hstack((np.zeros(up_sampling_factor), v_q_signal[0 : n_samples - up_sampling_factor]))
+    Returns
+    -------
 
-    # We apply the formula : signal_hat = Q * I_delayed - I * Q_delayed
-    signal_hat = v_q_signal * v_i_signal_delayed - v_i_signal * v_q_signal_delayed
+    - v_signal_decoded : array-like (of binary int)
+        the demodulated signal 
+    """
 
-    # Decision based on the sign of the estimated signal. If > 0 then its 1 and 0 else.
-    # Note that we remove samples added by the upsampling step
-    signal_hat = (signal_hat[2 * up_sampling_factor - 1 : - up_sampling_factor : up_sampling_factor] > 0).astype(int)
-    
-    return signal_hat
+    # Delayed signal of the symbol duration 
+    v_signal_delayed = np.hstack((np.zeros(up_sampling_factor), v_signal_rx[0 : v_signal_rx.shape[0] - up_sampling_factor]))
+
+    # Multiplication between conj(x(t)) and x(t-T) where T is the symbol duration
+    v_multiplied_signal = np.conj(v_signal_rx) * v_signal_delayed
+
+    # Phase difference extraction
+    v_phase = np.angle(v_multiplied_signal)
+
+    # Downsampling
+    v_phase = v_phase[2 * up_sampling_factor - 1 : - up_sampling_factor : up_sampling_factor]
+
+    # Bits estimation based on the phase difference sign
+    v_signal_decoded = (v_phase > 0).astype(np.int8)
+
+    return v_signal_decoded
+
+
+
+
 
