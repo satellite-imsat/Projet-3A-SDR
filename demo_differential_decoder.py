@@ -10,12 +10,12 @@
 @Desc    :   None
 '''
 
-from signals.gen_signal import random_binary_signal
-from modulation.mod_gmsk import mod_signal_gmsk, differential_decoder
-from propagation.channels import awgn_channel
+from functions.ais.gen_ais import gen_rand_ais_type_1
+from functions.dsp.modulation import mod_signal_gmsk, differential_decoder
+from functions.dsp.channels import awgn_channel
 import matplotlib.pyplot as plt
 import numpy as np
-from utils.metrics import compute_ber
+from functions.utils.metrics import compute_ber
 import matplotlib.pyplot as plt
 plt.style.use(['science','grid'])
 
@@ -23,7 +23,7 @@ plt.style.use(['science','grid'])
 ############################# Parameters #############################
 
 # We fix the random seed for reproductibility
-np.random.seed(1)
+#np.random.seed(1)
 
 # General parameters of the transmitted signal.
 # Each parameter name is followed by the corresponding unit.
@@ -50,10 +50,10 @@ c_time_bandwidth_product = 0.4
 # Desried Signal-to-Noise-Ratio in dB at the RX (float)
 c_snr_db = 5
 
-############################# Signal generation #############################
+############################# AIS signal #############################
 
-# Generate a random binary signal
-v_signal = random_binary_signal(n_symb = c_n_symb)
+# We generate a random AIS message and the associated packet
+v_signal = gen_rand_ais_type_1()
 
 # Plot of the generated binary signal
 plt.figure('binary_signal')
