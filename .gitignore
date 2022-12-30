@@ -1,3 +1,4 @@
 *.pyc
-.vscode
-.pytest_cache
+.vscode/
+.pytest_cache/
+__pycahce__/
