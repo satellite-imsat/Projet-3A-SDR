@@ -1,4 +1,4 @@
-from propagation.channels import *
+from functions.channels import *
 
 
 def test_output_signal():

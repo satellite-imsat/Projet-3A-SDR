@@ -13,6 +13,8 @@ March 2015.
 """
 
 import numpy as np
+from pyais.encode import encode_msg
+from pyais.messages import MessageType1
 
 
 def get_message_bit(ais_msg):
@@ -180,7 +182,7 @@ def non_return_to_zero_inversion(ais_data_bit):
             bin_msg[i] = volt_state
     ais_data_bit = np.copy(bin_msg)
 
-    return ais_data_bit
+    return ais_data_bit.astype(int)
 
 
 def get_ais_packet(ais_msg):
@@ -189,7 +191,7 @@ def get_ais_packet(ais_msg):
     Parameters
     ----------
     ais_msg : str
-        The The AIVDM/AIVDO sentence associated to the AIS message.
+        The AIVDM/AIVDO sentence associated to the AIS message.
 
     Returns
     -------
@@ -201,6 +203,55 @@ def get_ais_packet(ais_msg):
     ais_data_bit = add_checksum(ais_data_bit)
     ais_data_bit = bit_stuffing(ais_data_bit)
     ais_data_bit = add_preamble_flag(ais_data_bit)
-    ais_data_bit = non_return_to_zero_inversion(ais_data_bit).astype(int)
+    ais_data_bit = non_return_to_zero_inversion(ais_data_bit)
 
     return ais_data_bit
+
+def gen_rand_ais_type_1(course_deg = None, lat_deg = None, lon_deg = None, mmsi = None) -> str :
+
+    """Generates the AIS packet associated to the type I message corresponding to the
+    given parameters. if no parameters are provided, then random course, latitude, 
+    longitude ans MMSI are used.
+    
+    Parameters
+    ----------
+
+    - course_deg : float between 0 and 360 with 1 digits
+            the boat course in degrees
+    - lat_deg : float between - 90 and 90 with 3 digits
+            the boat latitude in degrees
+    - lat_deg : float between - 180 and 180 with 3 digits
+            the boat longitude in degrees
+    - mmsi : int between 0 and 1e10 - 1
+            the boat Maritime Mobile Service Identity
+    
+    Returns
+    -------
+
+    - ais_packet : (binary) array-like
+        the ais packet corresponding to the given parameters
+    
+    """
+
+    # Get random course, latitude, longitude and MMSI
+
+    if course_deg is None : 
+        course_deg = np.round(360 * np.random.ranf(), decimals = 1)
+    if lat_deg is None :
+        lat_deg = np.round(180 * np.random.ranf() - 90, decimals = 3)
+    if lon_deg is None :
+        lon_deg = np.round(360 * np.random.ranf() - 180, decimals = 3)
+    if mmsi is None :
+        mmsi = str(np.random.randint(low = 0, high = 1e10))
+
+    # The AIVDM/AIVDO sentence associated to the AIS message.
+    ais_msg = MessageType1.create(course = course_deg, lat = lat_deg, lon = lon_deg, mmsi = mmsi)
+    
+    # Conversion to a binary message
+    ais_msg_encoded = encode_msg(msg = ais_msg)
+
+    # Packet creation : 1) Ramp-Up bits, 2) Preamble bits, 3) The start flag, 
+    # 4) The AIS data bits, 5) The end flag, 6) Buffer.
+    ais_packet = get_ais_packet(ais_msg = ais_msg_encoded[0])
+
+    return ais_packet

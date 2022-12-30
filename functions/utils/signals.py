@@ -12,7 +12,6 @@
 
 
 import numpy as np
-from utils.str2bit import signalFromName
 from scipy.signal import upfirdn
 
 def random_binary_signal(n_symb : int) -> np.ndarray:
@@ -44,11 +43,6 @@ def random_binary_signal(n_symb : int) -> np.ndarray:
 
     return binary_signal.astype(int)
 
-def word_to_binary_signal(word : str) -> np.ndarray:
-
-    binary_signal = signalFromName(name = word)
-
-    return np.array(binary_signal)
 
 def binary_to_nrz_signal(binary_signal : np.ndarray, up_sampling_factor : int) -> np.ndarray :
 
