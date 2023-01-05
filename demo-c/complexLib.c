@@ -29,6 +29,22 @@ struct complex complexSoust(struct complex a, struct complex b){
     return result;
 };
 
+double squareNorm(struct complex a){
+    return (pow(a.real,2) + pow(a.imag,2));
+}
+
+double arg(struct complex a){
+    return (atan2(a.imag,a.real));
+}
+
 void printComplex(struct complex a){
     printf("%f + i%f \r\n", a.real, a.imag);
+}
+
+double squareNormVector(struct complex* a, int sizeVector){
+    double sum = 0.0;
+    for(int i =0;i<sizeVector;i++){
+        sum += squareNorm(a[i]);
+    }
+    return sum;
 }

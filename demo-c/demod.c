@@ -2,11 +2,7 @@
 #include "complexLib.h"
 #include <math.h>
 #include <stdio.h>
-
-int sizeSignal = 10;
-double fporteuse = 161975000.0;
-int timeDelay = 2;
-double fsample = 230400;
+#include "signalCaracteristics.h"
 
 void initVectors(double* timePointer, double samplePeriod){
     for(int i =0; i<sizeSignal; i++){
