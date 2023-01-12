@@ -9,7 +9,7 @@ our module. The AIVDM sentence and the true outputs are given by in the paper of
 in ais_generator.py)
 """
 
-from signals.gen_ais import *
+from functions.ais.gen_ais import *
 
 ais_msg = '!AIVDM,1,1,,B,19NS7Sp02wo?HETKA2K6mUM20<L=,0*27'
 
@@ -32,31 +32,63 @@ def test_get_message_bit():
 
 
 def test_flip_bits():
-    ais_data_bit = get_message_bit(ais_msg)
-    flip_bits(ais_data_bit)
-    assert np.array_equal(out2, ais_data_bit)
+    ais_bits = get_message_bit(ais_msg)
+    ais_bits = flip_bits(ais_bits)
+    assert np.array_equal(out2, ais_bits)
 
 
 def test_add_checksum():
-    ais_data_bit = get_message_bit(ais_msg)
-    flip_bits(ais_data_bit)
-    assert np.array_equal(out3, add_checksum(ais_data_bit))
+    ais_bits = get_message_bit(ais_msg)
+    ais_bits = flip_bits(ais_bits)
+    assert np.array_equal(out3, add_checksum(ais_bits))
 
 
 def test_bit_stuffing():
-    ais_data_bit = get_message_bit(ais_msg)
-    flip_bits(ais_data_bit)
-    ais_data_bit = add_checksum(ais_data_bit)
-    assert np.array_equal(out4, bit_stuffing(ais_data_bit))
+    ais_bits = get_message_bit(ais_msg)
+    ais_bits = flip_bits(ais_bits)
+    ais_bits = add_checksum(ais_bits)
+    assert np.array_equal(out4, bit_stuffing(ais_bits))
 
 
 def test_add_preamble_flag():
-    ais_data_bit = get_message_bit(ais_msg)
-    flip_bits(ais_data_bit)
-    ais_data_bit = add_checksum(ais_data_bit)
-    ais_data_bit = bit_stuffing(ais_data_bit)
-    assert np.array_equal(out5, add_preamble_flag(ais_data_bit))
+    ais_bits = get_message_bit(ais_msg)
+    ais_bits = flip_bits(ais_bits)
+    ais_bits = add_checksum(ais_bits)
+    ais_bits = bit_stuffing(ais_bits)
+    assert np.array_equal(out5, add_preamble_flag(ais_bits))
 
 
 def test_get_ais_packet():
     assert np.array_equal(out6, get_ais_packet(ais_msg))
+
+
+def test_ais_inversion():
+    ais_bits = get_message_bit(ais_msg)
+    ais_packet = get_ais_packet(ais_msg)
+    ais_inv = invert_ais_packet(ais_packet)
+
+    assert np.array_equal(ais_bits, ais_inv)
+
+
+def test_ais_inversion_random():
+    out = True
+    n_exp = 1000
+    size_bits = 100
+
+    for _ in range(n_exp):
+        # Random signal
+        ais_bits_init = np.random.randint(0, 2, size=size_bits)
+
+        # Build the packet
+        ais_bits = flip_bits(ais_bits_init)
+        ais_bits = add_checksum(ais_bits)
+        ais_bits = bit_stuffing(ais_bits)
+        ais_bits = add_preamble_flag(ais_bits)
+        ais_bits = nrzi(ais_bits)
+
+        # Invert the packet
+        ais_inv = invert_ais_packet(ais_bits)
+
+        out &= np.array_equal(ais_bits_init, ais_inv)
+
+    assert out
