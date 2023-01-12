@@ -13,8 +13,6 @@ March 2015.
 """
 
 import numpy as np
-from pyais.encode import encode_msg
-from pyais.messages import MessageType1
 
 
 def get_message_bit(ais_msg):
@@ -22,17 +20,17 @@ def get_message_bit(ais_msg):
 
     Parameters
     ----------
-    ais_msg : str
+    ais_msg: str
         The AIVDM/AIVDO sentence.
 
     Returns
     -------
-    ais_data_bit : (binary) array_like
+    ais_bits: array_like
         The data bits extracted from the AIS message.
     """
     ais_data_str = ais_msg.split(',')[5]  # Crops the part corresponding to the AIS data
     ais_data_dec = np.array(list(map(ord, ais_data_str)))  # Converts each character to its ASCII integer code
-    ais_data_bitstring = ''
+    ais_bitsstring = ''
 
     #  This loop performs the 6-bit formal conversion
     for i in range(len(ais_data_dec)):
@@ -41,48 +39,56 @@ def get_message_bit(ais_msg):
         else:
             ais_data_dec[i] -= 56
 
-        ais_data_bitstring += bin(ais_data_dec[i]).replace('0b', '').zfill(6)  # Decimal to 6-bit representation
+        ais_bitsstring += bin(ais_data_dec[i]).replace('0b', '').zfill(6)  # Decimal to 6-bit representation
 
-    ais_data_bit = np.array(list(map(int, list(ais_data_bitstring))))  # Bitstring to binary array
+    ais_bits = np.array(list(map(int, list(ais_bitsstring))))  # Bitstring to binary array
 
-    return ais_data_bit
+    return ais_bits
 
 
-def flip_bits(ais_data_bit):
+def flip_bits(ais_bits):
     """Flips the bits of the AIS data bits.
 
     Parameters
     ----------
-    ais_data_bit : (binary) array_like
-        The AIS data bits.
-    """
-    for i in range(0, ais_data_bit.size, 8):
-        ais_data_bit[i:i + 8] = np.flip(ais_data_bit[i:i + 8])
-
-
-def add_checksum(ais_data_bit):
-    """Adds the checksum at the end of the message, by using the CRC-16-CCITT standard.
-
-    Parameters
-    ----------
-    ais_data_bit : (binary) array_like
+    ais_bits: array_like
         The AIS data bits.
 
     Returns
     -------
-    ais_data_bit : (binary) array_like
+    out: array-like
+        The flipped version of the AIS data bits.
+    """
+    n = ais_bits.size
+    out = np.zeros(n)
+
+    for i in range(0, n, 8):
+        out[i:i + 8] = np.flip(ais_bits[i:i + 8])
+
+    return out
+
+
+def add_checksum(ais_bits):
+    """Adds the checksum at the end of the message, by using the CRC-16-CCITT standard.
+
+    Parameters
+    ----------
+    ais_bits: array_like
+        The AIS data bits.
+
+    Returns
+    -------
+    out: array_like
         The AIS data bits with the checksum at the end of the message.
     """
-
     # Parameters
     crc_width = 16
-    poly = np.array(list(map(int, bin(2 ** 16 + 2 ** 12 + 2 ** 5 + 2 ** 0).replace('0b', ''))))
+    poly = np.array(list(map(int, bin(2**16 + 2**12 + 2**5 + 2**0).replace('0b', ''))))
     init_val = np.ones(crc_width)
     final_xor = np.ones(crc_width)
 
     # Registry initialization
-    am = np.concatenate((ais_data_bit, np.zeros(crc_width)))
-
+    am = np.concatenate((ais_bits, np.zeros(crc_width)))
     am[:crc_width] = np.logical_xor(am[0:crc_width], init_val)
 
     # CRC calculation
@@ -93,96 +99,95 @@ def add_checksum(ais_data_bit):
             reg = np.logical_xor(reg, poly)
     mcrc = np.logical_xor(reg[1:], final_xor)
 
-    ais_data_bit = np.concatenate((ais_data_bit, mcrc))
+    out = np.concatenate((ais_bits, mcrc))
 
-    return ais_data_bit
+    return out
 
 
-def bit_stuffing(ais_data_bit):
+def bit_stuffing(ais_bits):
     """Performs bit-stuffing to the AIS data bits.
 
     Bit-stuffing means that 0 is added after every five consecutive 1.
 
     Parameters
     ----------
-    ais_data_bit : (binary) array_like
+    ais_bits: array_like
         The AIS data bits.
 
     Returns
     -------
-    ais_data_bit : (binary) array_like
+    ais_bits: array_like
         The AIS data bits after the bit-stuffing.
     """
     n_consecutive = 5
     i = n_consecutive - 1
 
-    while i <= ais_data_bit.size:
-        if np.array_equal(ais_data_bit[i - (n_consecutive - 1):i + 1], np.ones(n_consecutive)):
-            ais_data_bit = np.concatenate((ais_data_bit[:i + 1], np.array([0]), ais_data_bit[i + 1:]))
+    while i <= ais_bits.size:
+        if np.array_equal(ais_bits[i - (n_consecutive - 1):i + 1], np.ones(n_consecutive)):
+            ais_bits = np.concatenate((ais_bits[:i + 1], np.array([0]), ais_bits[i + 1:]))
             i += n_consecutive
         else:
             i += 1
 
-    return ais_data_bit
+    return ais_bits
 
 
-def add_preamble_flag(ais_data_bit):
+def add_preamble_flag(ais_bits):
     """Builds the AIS packet.
 
     The resulting AIS packet contains in this order :
-        1) Ramp-Up bits,
-        2) Preamble bits,
-        3) The start flag,
+        1) Ramp-Up bits (8 bits),
+        2) Preamble bits (24 bits),
+        3) The start flag (8 bits),
         4) The AIS data bits,
         5) The end flag,
         6) Buffer.
 
     Parameters
     ----------
-    ais_data_bit : (binary) array_like
+    ais_bits: array_like
         The AIS data bits.
 
     Returns
     -------
-    ais_data_bits : (binary) array_like
+    out: array_like
         The built AIS packet.
     """
     preamble = np.array([0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
     flag = np.array([0, 1, 1, 1, 1, 1, 1, 0])
-    ais_data_bit = np.concatenate((np.zeros(8), preamble, flag, ais_data_bit, flag, np.zeros(24)))
+    out = np.concatenate((np.zeros(8), preamble, flag, ais_bits, flag, np.zeros(24)))
 
-    return ais_data_bit
+    return out
 
 
-def non_return_to_zero_inversion(ais_data_bit):
+def nrzi(ais_bits):
     """Performs the non-return to zero inversion to the AIS packet.
 
     Parameters
     ----------
-    ais_data_bit : (binary) array_like
+    ais_bits: array_like
         The AIS data bits.
 
     Returns
     -------
-    ais_data_bit : (binary) array_like
+    out: array_like
         The AIS packet after the non-return to zero inversion.
     """
-    bin_msg = np.copy(ais_data_bit)
+    out = np.copy(ais_bits)
     inv_case = 0  # invert when 0 is observed
 
     volt_state = 0  # voltage state, assume initial = 0
-    for i in range(bin_msg.size):
-        if bin_msg[i] != inv_case:
-            bin_msg[i] = volt_state
+    for i in range(out.size):
+        if out[i] != inv_case:
+            out[i] = volt_state
         else:
             if volt_state == 0:
                 volt_state = 1
             else:
                 volt_state = 0
-            bin_msg[i] = volt_state
-    ais_data_bit = np.copy(bin_msg)
+            out[i] = volt_state
 
-    return ais_data_bit.astype(int)
+    return out
 
 
 def get_ais_packet(ais_msg):
@@ -190,22 +195,140 @@ def get_ais_packet(ais_msg):
 
     Parameters
     ----------
-    ais_msg : str
-        The AIVDM/AIVDO sentence associated to the AIS message.
+    ais_msg: str
+        The The AIVDM/AIVDO sentence associated to the AIS message.
 
     Returns
     -------
-    ais_data_bit : (binary) array_like
+    ais_bits: array_like
         The AIS packet.
     """
-    ais_data_bit = get_message_bit(ais_msg)
-    flip_bits(ais_data_bit)
-    ais_data_bit = add_checksum(ais_data_bit)
-    ais_data_bit = bit_stuffing(ais_data_bit)
-    ais_data_bit = add_preamble_flag(ais_data_bit)
-    ais_data_bit = non_return_to_zero_inversion(ais_data_bit)
+    ais_bits = get_message_bit(ais_msg)
+    ais_bits = flip_bits(ais_bits)
+    ais_bits = add_checksum(ais_bits)
+    ais_bits = bit_stuffing(ais_bits)
+    ais_bits = add_preamble_flag(ais_bits)
+    ais_bits = nrzi(ais_bits)
 
-    return ais_data_bit
+    return ais_bits
+
+
+def nrzi_inv(ais_bits):
+    """Invert the non return to zero inversion.
+
+    Parameters
+    ----------
+    ais_bits: array-like
+        The AIS data bits.
+
+    Returns
+    -------
+    out: array-like
+        The AIS data bits without non return to zero inversion.
+    """
+    n = np.size(ais_bits)
+    out = np.zeros(n)
+    state = 0
+
+    for i in range(n):
+        if ais_bits[i] != state:
+            out[i] = 0
+            state = ais_bits[i]
+        else:
+            out[i] = 1
+
+    return out
+
+
+def remove_preamble_flag(ais_bits):
+    """Remove the preamble and the start/end flags from the AIS packet.
+
+    Parameters
+    ----------
+    ais_bits: array-like
+        The AIS data bits.
+
+    Returns
+    -------
+    out: array-like
+        The AIS packet without the preamble and the start/end flags.
+    """
+    out = np.copy(ais_bits[40:-32])
+    return out
+
+
+def bit_stuffing_inv(ais_bits):
+    """Invert the bits stuffing.
+    
+    Parameters
+    ----------
+    ais_bits: array-like
+        The AIS data bits.
+
+    Returns
+    -------
+    out: array-like
+        The AIS data bits without bit stuffing.
+    """
+    n_cons = 5
+    i = n_cons - 1
+    i0 = 0
+    out = np.array([])
+    n = ais_bits.size
+
+    while i < n:
+        if np.array_equal(ais_bits[i - (n_cons - 1):i + 1], np.ones(n_cons)):
+            out = np.concatenate((out, ais_bits[i0:i+1]))
+            i0 = i + 2
+            i += n_cons + 1
+        else:
+            i += 1
+
+    out = np.concatenate((out, ais_bits[i0:]))
+
+    return out
+
+
+def remove_checksum(ais_bits):
+    """Remove the checksum from the AIS data bits.
+
+    Parameters
+    ----------
+    ais_bits: array-like
+        The AIS data bits.
+
+    Returns
+    -------
+    out: array-like
+        The AIS data bits without the checksum.
+    """
+    crc_width = 16
+    out = np.copy(ais_bits[:-crc_width])
+
+    return out
+
+
+def invert_ais_packet(ais_bits):
+    """Process the AIS packet to retrieve the initial AIS data bits.
+
+    Parameters
+    ----------
+    ais_bits: array-like
+        The AIS data bits.
+
+    Returns
+    -------
+    ais_bits: array-like
+        The initial AIS data bits.
+    """
+    ais_bits = nrzi_inv(ais_bits)
+    ais_bits = remove_preamble_flag(ais_bits)
+    ais_bits = bit_stuffing_inv(ais_bits)
+    ais_bits = remove_checksum(ais_bits)
+    ais_bits = flip_bits(ais_bits)
+
+    return ais_bits
+
 
 def gen_rand_ais_type_1(course_deg = None, lat_deg = None, lon_deg = None, mmsi = None) -> str :
 
