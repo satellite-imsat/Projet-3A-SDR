@@ -18,3 +18,7 @@ Remplacez le fichier usbh_diskio_dma.h, se trouvant dans Middlewares/FatFs/Drive
 Allez à l'emplacement du dossier example FatFs_USBDisk, dans le dossier Inc, remplacez tous les fichiers présents par les fichiers du dossier Inc du dépôt.
 
 Finalement, nous allons inclure dans le compilateur les librairies à ajouter. Clic droit sur le projet > Properties > C/C++ build > Settings > MCU GCC Compiler > include paths. Ajoutez-y les dossiers librtlsdr de Middlewares et usb de User. Vous devriez obtenir la configuration suivante : 
+
+<img src="images/STM32Cube-includeLibrairies.PNG" width="800"/>
+
+L'ajout de la trace dans les includes n'est pas obligatoire. 
