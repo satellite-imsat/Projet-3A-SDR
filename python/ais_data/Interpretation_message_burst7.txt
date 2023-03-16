@@ -1,0 +1,18 @@
+Message ID : 1
+Repeat indicator : 0
+MMSI : 357842000
+Position report - Class A
+Navigational status : 0 - under way using engine
+Turning right at rate of turn : 0
+Speed over ground (knots) : 1.450000e+01
+Low position accuracy
+Longitude : -6.172383e+00° (>0 = East, <0=West)
+Latitude : 4.843545e+01° (>0 = North, <0 = South)
+Course over ground : 2.081000e+02
+True heading : 208 degrees
+Time stamp (UTC second when the report was generated) : 32
+Special manoeuvre indicator not available
+RAIM not in use
+Sync state : UTC indirect
+Slot time-out : 1 frames are left until slot change
+UTC time : 15 hours and 50 minutes
