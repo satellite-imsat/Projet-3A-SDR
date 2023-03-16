@@ -48,7 +48,9 @@ C_SAMPLING_FREQUENCY_HZ = C_BITRATE_BITPERSEC * C_UPSAMPLING
 # SNR values in dB
 C_SNR_VALUES_DB = np.arange(-10, 25, 1)
 # Number of signals to be generated
-C_N_SIGNALS = 100
+C_N_SIGNALS = 1000
+# Flag to save figures
+C_SAVE = False
 
 # Storage arrays (one value for each SNR and each threshold values)
 # Binary Error Rate on the detected signal array 
@@ -139,68 +141,68 @@ if __name__ == '__main__':
 
 
     # Plots
+    if C_SAVE :
+        # Plot the BER curves
+        plt.figure()
+        plt.plot(C_SNR_VALUES_DB, ber_array, marker = "+")
+        plt.grid()
+        plt.ylabel("BER")
+        plt.xlabel("Signal to Noise Ratio (in dB)")
+        plt.title("BER vs. SNR")
+        plt.savefig("python/results/perf_demodulator/demodulator_ber_curves.png", dpi = 300)
 
-    # Plot the BER curves
-    plt.figure()
-    plt.plot(C_SNR_VALUES_DB, ber_array, marker = "+")
-    plt.grid()
-    plt.ylabel("BER")
-    plt.xlabel("Signal to Noise Ratio (in dB)")
-    plt.title("BER vs. SNR")
-    plt.savefig("python/results/perf_demodulator/demodulator_ber_curves.png", dpi = 300)
+        # Plot the message type error curves
+        plt.figure()
+        plt.plot(C_SNR_VALUES_DB, msg_type_errors_array, marker = "+")
+        plt.grid()
+        plt.xlabel("Signal to Noise Ratio (in dB)")
+        plt.ylabel("False message types proportion")
+        plt.title("False  message types vs. SNR")
+        plt.savefig("python/results/perf_demodulator/demodulator_message_type_error_curves.png", dpi = 300)
 
-    # Plot the message type error curves
-    plt.figure()
-    plt.plot(C_SNR_VALUES_DB, msg_type_errors_array, marker = "+")
-    plt.grid()
-    plt.xlabel("Signal to Noise Ratio (in dB)")
-    plt.ylabel("False message types proportion")
-    plt.title("False  message types vs. SNR")
-    plt.savefig("python/results/perf_demodulator/demodulator_message_type_error_curves.png", dpi = 300)
+        # Plot the MMSI error curves
+        plt.figure()
+        plt.plot(C_SNR_VALUES_DB, mmsi_errors_array, marker = "+")
+        plt.grid()
+        plt.xlabel("Signal to Noise Ratio (in dB)")
+        plt.ylabel("False MMSI proportion")
+        plt.title("False MMSI vs. SNR")
+        plt.savefig("python/results/perf_demodulator/demodulator_mmsi_error_curves.png", dpi = 300)
 
-    # Plot the MMSI error curves
-    plt.figure()
-    plt.plot(C_SNR_VALUES_DB, mmsi_errors_array, marker = "+")
-    plt.grid()
-    plt.xlabel("Signal to Noise Ratio (in dB)")
-    plt.ylabel("False MMSI proportion")
-    plt.title("False MMSI vs. SNR")
-    plt.savefig("python/results/perf_demodulator/demodulator_mmsi_error_curves.png", dpi = 300)
+        # Plot the longitude error curves
+        plt.figure()
+        plt.plot(C_SNR_VALUES_DB, longitude_errors_array, marker = "+")
+        plt.grid()
+        plt.xlabel("Signal to Noise Ratio (in dB)")
+        plt.ylabel("False longitude proportion")
+        plt.title("False longitudes vs. SNR")
+        plt.savefig("python/results/perf_demodulator/demodulator_longitude_error_curves.png", dpi = 300)
 
-    # Plot the longitude error curves
-    plt.figure()
-    plt.plot(C_SNR_VALUES_DB, longitude_errors_array, marker = "+")
-    plt.grid()
-    plt.xlabel("Signal to Noise Ratio (in dB)")
-    plt.ylabel("False longitude proportion")
-    plt.title("False longitudes vs. SNR")
-    plt.savefig("python/results/perf_demodulator/demodulator_longitude_error_curves.png", dpi = 300)
+        # Plot the latitude error curves
+        plt.figure()
+        plt.plot(C_SNR_VALUES_DB, latitude_errors_array, marker = "+")
+        plt.grid()
+        plt.xlabel("Signal to Noise Ratio (in dB)")
+        plt.ylabel("False latitudes proportion")
+        plt.title("False latitudes vs. SNR")
+        plt.savefig("python/results/perf_demodulator/demodulator_latitude_error_curves.png", dpi = 300)
 
-    # Plot the latitude error curves
-    plt.figure()
-    plt.plot(C_SNR_VALUES_DB, latitude_errors_array, marker = "+")
-    plt.grid()
-    plt.xlabel("Signal to Noise Ratio (in dB)")
-    plt.ylabel("False latitudes proportion")
-    plt.title("False latitudes vs. SNR")
-    plt.savefig("python/results/perf_demodulator/demodulator_latitude_error_curves.png", dpi = 300)
-
-    # Plot the course error curves
-    plt.figure()
-    plt.plot(C_SNR_VALUES_DB, course_errors_array, marker = "+")
-    plt.grid()
-    plt.xlabel("Signal to Noise Ratio (in dB)")
-    plt.ylabel("False courses proportion")
-    plt.title("False courses vs. SNR")
-    plt.savefig("python/results/perf_demodulator/demodulator_course_error_curves.png", dpi = 300)
+        # Plot the course error curves
+        plt.figure()
+        plt.plot(C_SNR_VALUES_DB, course_errors_array, marker = "+")
+        plt.grid()
+        plt.xlabel("Signal to Noise Ratio (in dB)")
+        plt.ylabel("False courses proportion")
+        plt.title("False courses vs. SNR")
+        plt.savefig("python/results/perf_demodulator/demodulator_course_error_curves.png", dpi = 300)
 
 
-    # Plot the CRC error curves
-    plt.figure()
-    plt.plot(C_SNR_VALUES_DB, crc_errors_array, marker = "+")
-    plt.grid()
-    plt.xlabel("Signal to Noise Ratio (in dB)")
-    plt.ylabel("False CRC proportion")
-    plt.title("False CRC vs. SNR")
-    plt.savefig("python/results/perf_demodulator/demodulator_crc_error_curves.png", dpi = 300)
+        # Plot the CRC error curves
+        plt.figure()
+        plt.plot(C_SNR_VALUES_DB, crc_errors_array, marker = "+")
+        plt.grid()
+        plt.xlabel("Signal to Noise Ratio (in dB)")
+        plt.ylabel("False CRC proportion")
+        plt.title("False CRC vs. SNR")
+        plt.savefig("python/results/perf_demodulator/demodulator_crc_error_curves.png", dpi = 300)
 
