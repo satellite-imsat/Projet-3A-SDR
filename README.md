@@ -34,7 +34,7 @@ L'ajout de la trace dans les includes n'est pas obligatoire.
 
 Dans ce projet, les développements ```python``` ont été effectués avec ```python```  3.10.9.
 
-1) Créer un nouvel environnment ```python``` à partir du fichier ```requirements.yml```.
+1) Créer un nouvel environnment ```python``` à partir du fichier ```requirements.txt```.
 2) Pour tester l'architecture sur des sigaux réels, fournis dans le dossier ```python/ais_data```, lancer le script ```demo_real_ais.py```. Les résultats attendus sont les suivants :
 
 - Message Type    : 1
